@@ -116,7 +116,7 @@ def count_syllables(word):
     return syls
 
 
-
+# Modified form of https://gist.github.com/drinks/2483508
 def flesch_kincaid(text,sentences):
     syllables = []
     misses = []
