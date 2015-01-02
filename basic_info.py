@@ -11,6 +11,7 @@ from __future__ import division
 import sys
 import nltk
 from nltk.corpus import cmudict
+from nltk.corpus import stopwords
 from pprint import pprint
 from hyphen import Hyphenator as hy
 
@@ -67,10 +68,12 @@ def get_raw(fname):
 def massage_raw(raw):
     modified = ''.join([character for character in raw if ord(character) < 128])
     sentences = nltk.sent_tokenize(modified)
+    words = nltk.word_tokenize(modified)
     tokens = [] 
-    for s in sentences:
-        for t in nltk.word_tokenize(s):
-            tokens.append(t)
+    stops = [unicode(word) for word in stopwords.words('english')] + [',', '.', '?', '!', ':', ';', '-', ')', '(']
+    for w in words:
+        if w not in stops:
+            tokens.append(w)
     return (nltk.Text(tokens), sentences)
 
 def nsyl(word):
@@ -158,6 +161,27 @@ def flesch_kincaid(text,sentences):
         }
     return results    
 
+# From: http://engineroom.trackmaven.com/blog/monthly-challenge-natural-language-processing/
+def top10_bigrams(words):
+    bigram_measure = nltk.collocations.BigramAssocMeasures()
+    bigram_finder = nltk.collocations.BigramCollocationFinder.from_words(words)
+
+    # Filter to top 20 results; otherwise processing is long
+    bigram_finder.apply_freq_filter(20)
+    for bigram in bigram_finder.score_ngrams(bigram_measure.raw_freq)[:10]:
+        print bigram
+
+# Modified the above to print trigrams, and look at words with a frequency of at least 10
+def top10_trigrams(words):
+    trigram_measure = nltk.collocations.TrigramAssocMeasures()
+    trigram_finder = nltk.collocations.TrigramCollocationFinder.from_words(words)
+
+    # Filter at least 10 instances of each word, and measure based on pmi metric
+    # http://www.nltk.org/api/nltk.metrics.html#nltk.metrics.association.NgramAssocMeasures.pmi
+    trigram_finder.apply_freq_filter(10)
+    for trigram in trigram_finder.score_ngrams(trigram_measure.pmi)[:10]:
+        print trigram
+
 if __name__ == "__main__":
     if len(sys.argv) is not 2:
         print "Usage: %s <text_file>" % (sys.argv[0])
@@ -166,3 +190,8 @@ if __name__ == "__main__":
     (text,sentences) = massage_raw(get_raw(sys.argv[1]))
 
     pprint(flesch_kincaid(text,sentences))
+    print("\nBigrams\n====================")
+    top10_bigrams(text)
+    
+    print("\nTrigrams\n====================")
+    top10_trigrams(text)
