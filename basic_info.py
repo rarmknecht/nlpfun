@@ -61,7 +61,7 @@ def word_context(text,word):
 
 def get_raw(fname):
     data = ""
-    with open(sys.argv[1]) as f:
+    with open(fname) as f:
         data = f.read()
     return data
 
@@ -169,7 +169,7 @@ def top10_bigrams(words):
     # Filter to top 20 results; otherwise processing is long
     bigram_finder.apply_freq_filter(20)
     for bigram in bigram_finder.score_ngrams(bigram_measure.raw_freq)[:10]:
-        print bigram
+        print(bigram)
 
 # Modified the above to print trigrams, and look at words with a frequency of at least 10
 def top10_trigrams(words):
@@ -180,15 +180,14 @@ def top10_trigrams(words):
     # http://www.nltk.org/api/nltk.metrics.html#nltk.metrics.association.NgramAssocMeasures.pmi
     trigram_finder.apply_freq_filter(10)
     for trigram in trigram_finder.score_ngrams(trigram_measure.pmi)[:10]:
-        print trigram
+        print(trigram)
 
 if __name__ == "__main__":
     if len(sys.argv) is not 2:
-        print "Usage: %s <text_file>" % (sys.argv[0])
+        print("Usage: %s <text_file>" % (sys.argv[0]))
         sys.exit(0)
 
     (text,sentences) = massage_raw(get_raw(sys.argv[1]))
-
     pprint(flesch_kincaid(text,sentences))
     print("\nBigrams\n====================")
     top10_bigrams(text)
